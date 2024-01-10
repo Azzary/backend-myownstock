@@ -21,15 +21,13 @@ public class ProductController {
         return service.findAll();
     }
 
-    // get product by id
-    @GetMapping("/product")
-    public @ResponseBody Product getProduct(@Validated @RequestBody String id) {
+    @GetMapping("/{id}")
+    public Product getProduct(@PathVariable String id) {
         return service.getProductById(id);
     }
 
-    //remove product by id
-    @DeleteMapping
-    public @ResponseBody void removeProduct(@Validated @RequestBody String id) {
+    @DeleteMapping("/{id}")
+    public void removeProduct(@PathVariable String id) {
         service.removeProductById(id);
     }
 
