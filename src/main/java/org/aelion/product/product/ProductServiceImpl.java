@@ -3,7 +3,7 @@ package org.aelion.product.product;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PutMapping;
-
+import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,13 +22,24 @@ public class ProductServiceImpl {
     }
 
     public void AddProduct(Product product) {
-        products.stream().findAny().filter(p -> p.getId().equals(product.getId())).ifPresentOrElse(p -> {
-            p.setStock(p.getStock() + product.getStock());
-            if(p.getStock() < 0) {
-                products.remove(p);
-            }
-        }, () -> {
-            products.add(product);
-        });
+        if(product.getId() == null || product.getId().isEmpty()) throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Product id is null or empty");
+        if(product.getStock() <= 0) throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Product stock is null or empty");
+        if(product.getLabel() == null || product.getLabel().isEmpty()) throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Product label is null or empty");
+        if (products.stream().anyMatch(p -> p.getId().equals(product.getId()))) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Product already exists");
+        }
+        products.add(product);
+    }
+
+    public Product getProductById(String id) {
+        var product = products.stream().filter(p -> p.getId().equals(id)).findFirst().orElse(null);
+        if (product == null) throw new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Product not found");
+        return product;
+    }
+
+    public void removeProductById(String id) {
+        var product = products.stream().filter(p -> p.getId().equals(id)).findFirst().orElse(null);
+        if (product == null) throw new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Product not found");
+        products.remove(product);
     }
 }
